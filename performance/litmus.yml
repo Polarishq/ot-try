@@ -1,0 +1,23 @@
+# List all litmus performance tests here
+# Performance tests use services defined in integration/docker-compose.yml
+included-configs:
+- health.yml
+
+modules:
+  console:
+    disable: true
+  local:
+    sequential: true # hit targets one by one
+
+# stats.csv summarizes client side metrics
+reporting:
+- module: final-stats
+  dump-csv: artifacts/stats.csv
+
+# global pass-fail conditions
+- module: passfail
+  criteria:
+  - succ<95% for 3s, stop as failed
+
+settings:
+  artifacts-dir: artifacts

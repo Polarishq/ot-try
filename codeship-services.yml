@@ -1,0 +1,48 @@
+builder:
+  build:
+    image: polarishq/ot-try-builder
+    dockerfile_path: Dockerfile-builder
+  encrypted_env_file: credentials.env.encrypted
+  volumes:
+    - ./tmp:/go/src/github.com/Polarishq/ot-try/tmp
+
+ot-try-real:
+  build:
+    image: 137462835382.dkr.ecr.us-west-1.amazonaws.com/ot-try
+    dockerfile_path: Dockerfile-app
+  environment:
+    # Set to unknown environment simply so the image can be built and the server can start up.
+    # ot-try-v1 from docker-compose.yml is the service that will
+    # actually be used to run component and integration tests.
+    - ENVIRONMENT_NAME=unknown-environment
+  encrypted_env_file: credentials.env.encrypted
+  volumes_from:
+    - builder
+
+ot-try-stub:
+  build:
+    image: 137462835382.dkr.ecr.us-west-1.amazonaws.com/ot-try:stub
+    dockerfile_path: ./integration/doubles/ot-try/Dockerfile
+  encrypted_env_file: credentials.env.encrypted
+
+integrationtester:
+  build:
+    image: polarishq/ot-try-integrationtester
+    dockerfile_path: Dockerfile-integrationtester
+  encrypted_env_file: credentials.env.encrypted
+  depends_on:
+  - ot-try-real
+  add_docker: true
+  volumes_from:
+    - builder
+
+awsgenerator:
+  image: codeship/aws-ecr-dockercfg-generator
+  encrypted_env_file: credentials.env.encrypted # contains Secret, AccessKey and Region
+  add_docker: true
+
+deployatron:
+  image: polarishq/deployatron
+  encrypted_env_file: credentials.env.encrypted # contains Secret, AccessKey and Region
+  volumes:
+    - .:/go/src/github.com/Polarishq/ot-try

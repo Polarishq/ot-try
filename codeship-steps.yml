@@ -1,0 +1,86 @@
+- type: parallel
+  dockercfg_service: awsgenerator
+  steps:
+  - type: serial
+    service: builder
+    steps:
+    - name: Run tests with coverage
+      command: make unittest
+    - name: Build ot-try binaries
+      command: make build
+
+  - type: serial
+    steps:
+    - name: Build ot-try-stub image
+      service: ot-try-stub
+      command: true
+
+- type: serial
+  service: integrationtester
+  dockercfg_service: awsgenerator
+  steps:
+  - name: Run component tests
+    command: make component_test
+  - name: Run integration tests
+    command: make integration_test
+  - name: Run performance tests
+    command: make performance_test
+
+- type: serial
+  dockercfg_service: awsgenerator
+  steps:
+  - type: serial
+    service: builder
+    steps:
+    - name: Process test coverage files
+      command: make coverage_download coverage_combine coveralls coverage_html coverage_upload
+
+- type: parallel
+  dockercfg_service: awsgenerator
+  steps:
+
+  # Push images for the real service
+  - type: serial
+    service: ot-try-real
+    steps:
+    - type: push
+      image_tag: "{{.CommitID}}"        # Tag with the commit ID
+      image_name:  137462835382.dkr.ecr.us-west-1.amazonaws.com/ot-try
+      registry: https://137462835382.dkr.ecr.us-west-1.amazonaws.com
+    - type: push
+      image_tag: "{{.Branch}}"          # Tag with the branch name
+      image_name:  137462835382.dkr.ecr.us-west-1.amazonaws.com/ot-try
+      registry: https://137462835382.dkr.ecr.us-west-1.amazonaws.com
+    - type: push
+      tag: "master"
+      image_tag: "latest"               # If it's the master branch tag it as latest
+      image_name:  137462835382.dkr.ecr.us-west-1.amazonaws.com/ot-try
+      registry: https://137462835382.dkr.ecr.us-west-1.amazonaws.com
+
+  # Push images for stubbed service
+  - type: serial
+    service: ot-try-stub
+    image_name:  137462835382.dkr.ecr.us-west-1.amazonaws.com/ot-try
+    steps:
+    - type: push
+      image_tag: "stub-{{.CommitID}}"   # Tag with the commit ID
+      image_name:  137462835382.dkr.ecr.us-west-1.amazonaws.com/ot-try
+      registry: https://137462835382.dkr.ecr.us-west-1.amazonaws.com
+    - type: push
+      image_tag: "stub-{{.Branch}}"     # Tag with the branch name
+      image_name:  137462835382.dkr.ecr.us-west-1.amazonaws.com/ot-try
+      registry: https://137462835382.dkr.ecr.us-west-1.amazonaws.com
+    - type: push
+      tag: "master"
+      image_tag: "stub-latest"          # If it's the master branch tag it as latest
+      image_name:  137462835382.dkr.ecr.us-west-1.amazonaws.com/ot-try
+      registry: https://137462835382.dkr.ecr.us-west-1.amazonaws.com
+
+
+- type: serial
+  service: deployatron
+  encrypted_dockercfg_path: dockercfg.json.encrypted
+  steps:
+  - command: update component ot-try             # Update default component parameters
+  - command: update component ot-try branch-env  # Update component parameters for the environment this build is running against (branch based environment naming)
+  - command: deploy component ot-try branch-env  # Deploy using branch based environment naming

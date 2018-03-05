@@ -1,0 +1,10 @@
+
+component:
+  definition: swagger.yml
+  deployment:
+    environment_whitelist:
+      - your_environment_name
+  archetype:
+    name: avanti-service
+  dependencies:
+    - bouncer

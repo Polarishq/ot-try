@@ -1,0 +1,22 @@
+-  request:
+      url: /health
+      method: GET
+   response:
+      status: 200
+      headers:
+         content-type: application/json
+      body: >
+        {
+          "healthy": true,
+          "stub": true,
+          "service_info": {
+            "name": "ot-try-v1",
+            "version": "v1"
+          }
+        }
+
+-  request:
+      url: /cleanup
+      method: POST
+   response:
+      status: 204

@@ -1,0 +1,17 @@
+# Start from the latest PolarisHQ skel-app container
+FROM polarishq/skel-app
+
+USER root
+EXPOSE 80 443
+
+COPY skel/templates/static /var/www/static
+COPY tmp/ssl /tmp/ssl
+COPY tmp/version /tmp/version
+
+WORKDIR /go/bin
+
+COPY tmp/bin/* ./
+COPY entrypoint.sh ./
+COPY cmd/ot-try-server/main_test.go ./
+
+CMD ["/go/bin/entrypoint.sh"]

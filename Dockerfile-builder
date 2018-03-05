@@ -1,0 +1,10 @@
+# Start from the latest PolarisHQ skel-builder image
+FROM polarishq/skel-builder
+
+# Set the WORKDIR to the project path in your GOPATH, e.g. /go/src/github.com/Polarishq/ot-try
+WORKDIR /go/src/github.com/Polarishq/ot-try
+
+# Copy the source files into place
+COPY . ./
+
+CMD sh

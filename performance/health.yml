@@ -1,0 +1,20 @@
+# Load tests for health endpoint
+
+execution:
+- concurrency: 10
+  hold-for: 10s
+  scenario: health
+
+scenarios:
+  health:
+    think-time: 500ms
+    headers:
+        Accept: "application/json"
+    requests:
+    - url: http://ot-try-v1/health
+      label: get_health
+
+reporting:
+- module: passfail
+  criteria:
+  - avg-rt of get_health>500ms for 3s, stop as failed

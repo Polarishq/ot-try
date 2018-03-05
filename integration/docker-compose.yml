@@ -1,0 +1,28 @@
+version: '3'
+services:
+  statsd-v1:
+    image: "137462835382.dkr.ecr.us-west-1.amazonaws.com/statsd"
+    environment:
+      ENVIRONMENT_NAME:
+    ports:
+      - 8125/udp
+  ot-try-v1:
+    image: "137462835382.dkr.ecr.us-west-1.amazonaws.com/ot-try"
+    environment:
+      SERVER_COVERAGE: "true"
+      CI_COMMIT_ID:
+      ENVIRONMENT_NAME:
+      AWS_ACCESS_KEY_ID:
+      AWS_SECRET_ACCESS_KEY:
+      AWS_DEFAULT_REGION:
+    links:
+      - statsd-v1
+    ports:
+      - 80
+      - 443
+    logging:
+      driver: splunk:${DOCKER_SPLUNK_PLUGIN_VERSION}
+      options:
+        splunk-token: ${DOCKER_SPLUNK_PLUGIN_TOKEN}
+        splunk-url: ${DOCKER_SPLUNK_PLUGIN_URL}
+        splunk-source: "ot-try_${USER:-codeship}_${CI_COMMIT_ID:-dev}"

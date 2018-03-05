@@ -1,0 +1,101 @@
+swagger: "2.0"
+info:
+  description: "Rest API definition for ot-try"
+  version: "v1"
+  title: "ot-try"
+host: ot-try-v1
+basePath: /
+schemes:
+  - http
+consumes:
+  - application/json
+produces:
+  - application/json
+paths:
+  /health:
+    get:
+      operationId: health
+      tags:
+        - Health
+      summary: "UNVERSIONED Health check endpoint. Required for all services"
+      description: |
+        Performs detailed internal checks and reports back whether or not the service is operating properly
+        https://confluence.splunk.com/display/PROD/Common+Microservice+Endpoints+and+Version+Management
+      responses:
+        200:
+          description: "Service is operating normally"
+          schema:
+            $ref: "#/definitions/Health"
+        default:
+          description: Unexpected error
+          schema:
+            $ref: "#/definitions/Error"
+  /cleanup:
+    post:
+      operationId: cleanup
+      tags:
+        - Cleanup
+      summary: "Endpoint to execute all cleanups necessary after a test run"
+      description: |
+        Endpoint to be called during test teardown.  It will execute all cleanups necessary after a test run
+      responses:
+        204:
+          description: successful operation
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+definitions:
+  Error:
+    type: object
+    required:
+      - code
+    properties:
+      code:
+        type: integer
+        format: int32
+        description: |
+          Internal error code. In generic error cases this may be a HTTP status code.
+          Therefore internal error codes should not conflict with HTTP status codes.
+      message:
+        type: string
+        description: A brief description of the error
+      fields:
+        type: string
+        description: Optional list of field names which caused the error
+  ServiceInfo:
+    type: object
+    required:
+      - name
+      - version
+    properties:
+      name:
+        type: string
+        description: Service name
+      version:
+        type: string
+        description: Service API version
+      error:
+        $ref: "#/definitions/Error"
+  Health:
+    type: object
+    required:
+      - healthy
+      - stub
+      - revision
+      - service_info
+    properties:
+      healthy:
+        type: boolean
+        description: Flag indicating whether or not ALL internal checks passed
+      stub:
+        type: boolean
+        default: false
+        description: Flag indicating whether or not this service is live or stubbed
+      revision:
+        type: string
+        description: Microservice revision
+      error:
+        $ref: "#/definitions/Error"
+      service_info:
+        $ref: "#/definitions/ServiceInfo"

@@ -1,0 +1,21 @@
+{
+  "name": "ot-try-tests",
+  "version": "1.0.0",
+  "description": "Integration tests for ot-try",
+  "repository": "https://github.com/Polarishq/ot-try",
+  "license": "ISC",
+  "scripts": {
+    "component_test": "mocha --reporter spec --timeout 60000 .",
+    "integration_test": "mocha-parallel-tests --reporter spec --timeout 60000 ."
+
+  },
+  "dependencies": {
+    "chakram": "~1.5.0",
+    "q": "^1.5.0"
+  },
+  "eslintConfig": {
+    "ecmaFeatures": {
+      "impliedStrict": true
+    }
+  }
+}
